@@ -9,13 +9,56 @@
 import UIKit
 import CoreData
 
-let reuseIdentifier = "MyCollectionViewCell"
+let reuseIdentifier = "CVTeamCell"
 
-class MyCollectionViewController: UICollectionViewController, NSFetchedResultsControllerDelegate {
+class MyCollectionViewController: UICollectionViewController, UICollectionViewDelegate, NSFetchedResultsControllerDelegate {
 
+    @IBOutlet weak var btnAdd: UIBarButtonItem!
+    
+    @IBAction func addTeam(sender: AnyObject) {
+        var alert = UIAlertController(title: "Secret Team",
+            message: "Add a new team",
+            preferredStyle: UIAlertControllerStyle.Alert)
+        
+        alert.addTextFieldWithConfigurationHandler {
+            (textField: UITextField!) in
+            textField.placeholder = "Team Name"
+        }
+        alert.addTextFieldWithConfigurationHandler {
+            (textField: UITextField!) in
+            textField.placeholder = "Qualifying Zone"
+        }
+        
+        alert.addAction(UIAlertAction(title: "Save",
+            style: .Default, handler: { (action: UIAlertAction!) in
+                println("Saved")
+                
+                let nameTextField = alert.textFields![0] as UITextField
+                let zoneTextField = alert.textFields![1] as UITextField
+                
+                let team =
+                NSEntityDescription.insertNewObjectForEntityForName("Team",
+                    inManagedObjectContext: self.coreDataStack.context) as Team
+                
+                team.teamName = nameTextField.text
+                team.qualifyingZone = zoneTextField.text
+                team.imageName = "wenderland-flag"
+                
+                self.coreDataStack.saveContext()
+        }))
+        
+        alert.addAction(UIAlertAction(title: "Cancel",
+            style: .Default, handler: { (action: UIAlertAction!) in
+                println("Cancel")
+        }))
+        
+        presentViewController(alert, animated: true, completion: nil)
+    }
+    
     var fetchedResultsController : NSFetchedResultsController!
-    var managedObjectContext : NSManagedObjectContext!
-    var objectChanges : Array<Dictionary<NSFetchedResultsChangeType, NSIndexPath>>!
+    var coreDataStack: CoreDataStack!
+    
+    var objectChanges : Array<Dictionary<NSFetchedResultsChangeType, (NSIndexPath,NSIndexPath?)>>!
     var sectionChanges : Array<Dictionary<NSFetchedResultsChangeType, Int>>!
     
     override func viewDidLoad() {
@@ -24,11 +67,32 @@ class MyCollectionViewController: UICollectionViewController, NSFetchedResultsCo
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
 
-        // Register cell classes
-        self.collectionView!.registerClass(UICollectionViewCell.self, forCellWithReuseIdentifier: reuseIdentifier)
-        
-        objectChanges = Array<Dictionary<NSFetchedResultsChangeType, NSIndexPath>>()
+        objectChanges = Array<Dictionary<NSFetchedResultsChangeType, (NSIndexPath,NSIndexPath?)>>()
         sectionChanges = Array<Dictionary<NSFetchedResultsChangeType, Int>>()
+        
+        //1
+        let fetchRequest = NSFetchRequest(entityName: "Team")
+        
+        let zoneSort = NSSortDescriptor(key: "qualifyingZone", ascending: true)
+        let scoreSort = NSSortDescriptor(key: "wins", ascending: false)
+        let nameSort = NSSortDescriptor(key: "teamName", ascending: true)
+        fetchRequest.sortDescriptors = [zoneSort, scoreSort, nameSort]
+        
+        //2
+        fetchedResultsController =
+            NSFetchedResultsController(fetchRequest: fetchRequest,
+                managedObjectContext: coreDataStack.context,
+                sectionNameKeyPath: "qualifyingZone",
+                cacheName: "worldCup")
+        
+        fetchedResultsController.delegate = self
+        
+        //3
+        var error: NSError? =  nil
+        if (!fetchedResultsController.performFetch(&error)) {
+            println("Error: \(error?.localizedDescription)")
+        }
+        
     }
 
     override func didReceiveMemoryWarning() {
@@ -54,21 +118,56 @@ class MyCollectionViewController: UICollectionViewController, NSFetchedResultsCo
 
 
     override func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        let sectionInfo = fetchedResultsController.sections![section]
-            as NSFetchedResultsSectionInfo
-        
+        let sectionInfo = fetchedResultsController.sections![section] as NSFetchedResultsSectionInfo
         return sectionInfo.numberOfObjects
     }
 
     override func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCellWithReuseIdentifier(reuseIdentifier, forIndexPath: indexPath) as UICollectionViewCell
-    
-        // Configure the cell
-    
+        let cell = collectionView.dequeueReusableCellWithReuseIdentifier(reuseIdentifier, forIndexPath: indexPath) as CVTeamCell
+        configureCell(cell, indexPath: indexPath)
         return cell
     }
-
     
+    func configureCell(cell: CVTeamCell, indexPath: NSIndexPath) {
+        let team = fetchedResultsController.objectAtIndexPath(indexPath) as Team
+        
+        cell.flagImageView.image = UIImage(named: team.imageName)
+        cell.teamLabel.text = team.teamName
+        cell.scoreLabel.text = "Wins: \(team.wins)"
+    }
+    
+    
+    override func collectionView(collectionView: UICollectionView,
+                                 viewForSupplementaryElementOfKind kind: String,
+                                 atIndexPath indexPath: NSIndexPath) -> UICollectionReusableView {
+        let sectionInfo = fetchedResultsController.sections![indexPath.section] as NSFetchedResultsSectionInfo
+            //1
+            switch kind {
+                //2
+            case UICollectionElementKindSectionHeader:
+                //3
+                let headerView =
+                collectionView.dequeueReusableSupplementaryViewOfKind(kind,
+                    withReuseIdentifier: "CVHeaderCell",
+                    forIndexPath: indexPath)
+                    as CVHeaderView
+                headerView.label.text = sectionInfo.name
+                return headerView
+            default:
+                //4
+                assert(false, "Unexpected element kind")
+            }
+    }
+    
+    override func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
+        collectionView.deselectItemAtIndexPath(indexPath, animated: true)
+        let team = fetchedResultsController.objectAtIndexPath(indexPath) as Team
+        let wins = team.wins.integerValue
+        team.wins = NSNumber(integer: wins + 1)
+        coreDataStack.saveContext()
+    }
+    
+    //MARK:  NSFetchedResultsController
     func controller(controller: NSFetchedResultsController,
                     didChangeSection sectionInfo: NSFetchedResultsSectionInfo,
                     atIndex sectionIndex: Int,
@@ -81,12 +180,9 @@ class MyCollectionViewController: UICollectionViewController, NSFetchedResultsCo
         case .Insert:
             println("insert")
             change[type] = sectionIndex
-            
-            //tableView.insertSections(indexSet,withRowAnimation: .Automatic)
         case .Delete:
             println("delete")
             change[type] = sectionIndex
-            //tableView.deleteSections(indexSet,withRowAnimation: .Automatic)
         default :
             break
         }
@@ -99,17 +195,17 @@ class MyCollectionViewController: UICollectionViewController, NSFetchedResultsCo
                     forChangeType type: NSFetchedResultsChangeType,
                     newIndexPath: NSIndexPath!) {
                         
-        var change = Dictionary<NSFetchedResultsChangeType, NSIndexPath>()
+        var change = Dictionary<NSFetchedResultsChangeType, (NSIndexPath, NSIndexPath?)>()
             
         switch type {
         case .Insert:
-            change[type] = newIndexPath
+            change[type] = (newIndexPath,nil)
         case .Delete:
-            change[type] = indexPath
+            change[type] = (indexPath,nil)
         case .Update:
-            change[type] = indexPath
+            change[type] = (indexPath,nil)
         case .Move:
-            println("not handled yet")
+            change[type] = (indexPath,newIndexPath)
         default:
             break
         }
@@ -152,16 +248,17 @@ class MyCollectionViewController: UICollectionViewController, NSFetchedResultsCo
 
             self.collectionView!.performBatchUpdates({
                 for change in self.objectChanges {
-                    for (type,val) in change {
+                    for (type,val:(NSIndexPath, NSIndexPath?)) in change {
                         switch (type) {
                         case NSFetchedResultsChangeType.Insert :
-                            self.collectionView!.insertItemsAtIndexPaths([val])
+                            self.collectionView!.insertItemsAtIndexPaths([val.0])
                         case NSFetchedResultsChangeType.Delete :
-                            self.collectionView!.deleteItemsAtIndexPaths([val])
+                            self.collectionView!.deleteItemsAtIndexPaths([val.0])
                         case NSFetchedResultsChangeType.Update :
-                            self.collectionView!.reloadItemsAtIndexPaths([val])
+                            self.collectionView!.reloadItemsAtIndexPaths([val.0])
                         case NSFetchedResultsChangeType.Move :
-                            println("item move not handled")
+                            self.collectionView!.deleteItemsAtIndexPaths([val.0])
+                            self.collectionView!.insertItemsAtIndexPaths([val.1!])
                         default:""
                             break
                         }

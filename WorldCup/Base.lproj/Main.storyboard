@@ -104,22 +104,22 @@
             </objects>
             <point key="canvasLocation" x="1270.5" y="465.75"/>
         </scene>
-        <!--My Collection View Controller-->
+        <!--CVController-->
         <scene sceneID="QZR-Os-rn2">
             <objects>
-                <collectionViewController id="QNl-ew-giS" customClass="MyCollectionViewController" customModule="WorldCup" customModuleProvider="target" sceneMemberID="viewController">
+                <collectionViewController id="QNl-ew-giS" userLabel="CVController" customClass="MyCollectionViewController" customModule="WorldCup" customModuleProvider="target" sceneMemberID="viewController">
                     <collectionView key="view" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" id="90t-4f-CTJ">
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="VlE-3v-vsP">
                             <size key="itemSize" width="299" height="90"/>
-                            <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                            <size key="headerReferenceSize" width="50" height="50"/>
                             <size key="footerReferenceSize" width="0.0" height="0.0"/>
                             <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                         </collectionViewFlowLayout>
                         <cells>
-                            <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="vIh-Ix-J0e">
+                            <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="CVTeamCell" id="vIh-Ix-J0e" customClass="CVTeamCell" customModule="WorldCup" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
@@ -127,7 +127,7 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mkK-Ba-2kT">
-                                            <rect key="frame" x="138" y="18" width="42" height="21"/>
+                                            <rect key="frame" x="138" y="18" width="153" height="21"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                                             <nil key="highlightedColor"/>
@@ -136,7 +136,7 @@
                                             <rect key="frame" x="8" y="8" width="117" height="79"/>
                                         </imageView>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vbB-Ua-Eep">
-                                            <rect key="frame" x="138" y="50" width="42" height="21"/>
+                                            <rect key="frame" x="138" y="50" width="153" height="21"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                                             <nil key="highlightedColor"/>
@@ -144,17 +144,47 @@
                                     </subviews>
                                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 </view>
+                                <connections>
+                                    <outlet property="flagImageView" destination="6Dh-Gm-sEm" id="EF7-kF-fmD"/>
+                                    <outlet property="scoreLabel" destination="vbB-Ua-Eep" id="Yv8-76-wYn"/>
+                                    <outlet property="teamLabel" destination="mkK-Ba-2kT" id="MKb-k8-fxl"/>
+                                </connections>
                             </collectionViewCell>
                         </cells>
+                        <collectionReusableView key="sectionHeaderView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" restorationIdentifier="CVHeaderView" reuseIdentifier="CVHeaderCell" id="3vH-5c-iyQ" userLabel="CVHeaderView" customClass="CVHeaderView" customModule="WorldCup" customModuleProvider="target">
+                            <rect key="frame" x="0.0" y="0.0" width="600" height="50"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <subviews>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="T3g-Am-bla">
+                                    <rect key="frame" x="15" y="0.0" width="435" height="50"/>
+                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                    <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                            </subviews>
+                            <connections>
+                                <outlet property="label" destination="T3g-Am-bla" id="84l-3f-D7s"/>
+                            </connections>
+                        </collectionReusableView>
                         <connections>
                             <outlet property="dataSource" destination="QNl-ew-giS" id="PmG-v7-Q60"/>
                             <outlet property="delegate" destination="QNl-ew-giS" id="LUU-QQ-hWW"/>
                         </connections>
                     </collectionView>
+                    <navigationItem key="navigationItem" title="World Cup!" id="8KO-NE-lcQ">
+                        <barButtonItem key="rightBarButtonItem" systemItem="add" id="Ep9-B0-f83">
+                            <connections>
+                                <action selector="addTeam:" destination="QNl-ew-giS" id="Gc7-M9-E89"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="btnAdd" destination="Ep9-B0-f83" id="SPd-w0-YIy"/>
+                    </connections>
                 </collectionViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="wnm-mg-t4l" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1101" y="1147"/>
+            <point key="canvasLocation" x="1048" y="1224"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="I5f-C4-Lj2">
@@ -167,7 +197,7 @@
                     </navigationBar>
                     <nil name="viewControllers"/>
                     <connections>
-                        <segue destination="vXZ-lx-hvc" kind="relationship" relationship="rootViewController" id="yd5-Ph-qiT"/>
+                        <segue destination="QNl-ew-giS" kind="relationship" relationship="rootViewController" id="eL9-p6-R5M"/>
                     </connections>
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ppx-AP-BK4" userLabel="First Responder" sceneMemberID="firstResponder"/>

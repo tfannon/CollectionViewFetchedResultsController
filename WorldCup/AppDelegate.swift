@@ -22,7 +22,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       importJSONSeedDataIfNeeded()
       
       let navController = window!.rootViewController as UINavigationController
-      let viewController = navController.topViewController as ViewController
+      //println(navController)
+      //println(navController.topViewController)
+      let viewController = navController.topViewController as MyCollectionViewController
       viewController.coreDataStack = coreDataStack
       
       return true
